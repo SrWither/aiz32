@@ -16,8 +16,8 @@ pub struct RegisterBank {
     pub general: [Register; 32],
     pub pc: Register,
     pub sp: Register,
+    pub lr: Register,
     pub flags: Register,
-    pub zero: Register,
     pub fregs: [f32; 32],
 }
 
@@ -27,8 +27,8 @@ impl RegisterBank {
             general: std::array::from_fn(|_| Register::new()),
             pc: Register::from(pc),
             sp: Register::from(sp),
+            lr: Register::new(),
             flags: Register::new(),
-            zero: Register::new(),
             fregs: [0.0; 32],
         }
     }
@@ -63,9 +63,20 @@ impl RegisterBank {
     pub fn sp(&self) -> u32 {
         self.sp.value
     }
+
     #[inline]
     pub fn set_sp(&mut self, v: u32) {
         self.sp.value = v
+    }
+
+    #[inline]
+    pub fn lr(&self) -> u32 {
+        self.lr.value
+    }
+
+    #[inline]
+    pub fn set_lr(&mut self, v: u32) {
+        self.lr.value = v
     }
 
     #[inline]
@@ -80,15 +91,20 @@ impl RegisterBank {
     #[inline]
     pub fn fget(&self, idx: u8) -> f32 {
         let i = idx as usize;
-        debug_assert!(i < self.fregs.len(), "floating register index out of bounds");
+        debug_assert!(
+            i < self.fregs.len(),
+            "floating register index out of bounds"
+        );
         self.fregs[i]
     }
 
     #[inline]
     pub fn fset(&mut self, idx: u8, val: f32) {
         let i = idx as usize;
-        debug_assert!(i < self.fregs.len(), "floating register index out of bounds");
+        debug_assert!(
+            i < self.fregs.len(),
+            "floating register index out of bounds"
+        );
         self.fregs[i] = val;
     }
 }
-

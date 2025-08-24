@@ -1,7 +1,7 @@
 pub mod console;
 pub mod gpu;
 
-use aiz32core::cpu::CPU;
+use aiz32core::{alu::Flags, cpu::CPU};
 use std::fs;
 
 use crate::console::Console;
@@ -17,18 +17,49 @@ fn main() {
     cpu.io.register_peripheral(&mut console);
 
     loop {
+        cpu.step();
+
+        let flags = Flags::from_u32(cpu.regs.flags());
+
+        println!("==================== CPU STATE ====================");
+        println!("Registers:");
+        for i in 0..7 {
+            print!("R{}: {:08X}  ", i, cpu.regs.get(i));
+            if i == 3 {
+                println!();
+            } // salto de línea después de R3
+        }
+        println!();
         println!(
-            "R0: {:08X} R1: {:08X} R2: {:08X} R3: {:08X} R4: {:08X} SP: {:08X} PC: {:08X}\r",
-            cpu.regs.get(0),
-            cpu.regs.get(1),
-            cpu.regs.get(2),
-            cpu.regs.get(3),
-            cpu.regs.get(4),
+            "SP: {:08X}  PC: {:08X}  LR: {:08X}  (dec: SP={}, PC={}, LR={})",
             cpu.regs.sp(),
-            cpu.regs.pc()
+            cpu.regs.pc(),
+            cpu.regs.lr(),
+            cpu.regs.sp(),
+            cpu.regs.pc(),
+            cpu.regs.lr()
         );
 
-        cpu.step();
-        std::thread::sleep(std::time::Duration::from_millis(1000));
+        // imprimir cada flag por separado
+        println!("Flags:");
+        println!(
+            "Z:{} C:{} O:{} S:{} G:{} E:{} NE:{} L:{} GE:{} LE:{}",
+            flags.zero as u8,
+            flags.carry as u8,
+            flags.overflow as u8,
+            flags.sign as u8,
+            flags.greater as u8,
+            flags.equal as u8,
+            flags.not_equal as u8,
+            flags.less as u8,
+            flags.greater_equal as u8,
+            flags.less_equal as u8,
+        );
+        println!("==================================================\n");
+
+        // std::thread::sleep(std::time::Duration::from_millis(1000));
+        // press enter to continue
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
     }
 }

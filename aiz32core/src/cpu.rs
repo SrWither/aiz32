@@ -61,15 +61,23 @@ impl<'a> CPU<'a> {
                 rs1,
                 rs2,
             } => {
-                let a = self.regs.get(rs1);
-                let b = self.regs.get(rs2);
-
                 let alu_op = ALUOp::from_opcode(opcode);
                 let in_flags = Flags::from_u32(self.regs.flags());
 
-                let result: ALUResult = ALU::execute(alu_op, a, b, in_flags);
+                let result: ALUResult = if matches!(alu_op, ALUOp::Cmp | ALUOp::Ucmp) {
+                    let a = self.regs.get(rd);
+                    let b = self.regs.get(rs1);
+                    ALU::execute(alu_op, a, b, in_flags)
+                } else {
+                    let a = self.regs.get(rs1);
+                    let b = self.regs.get(rs2);
+                    ALU::execute(alu_op, a, b, in_flags)
+                };
 
-                self.regs.set(rd, result.value);
+                if !matches!(alu_op, ALUOp::Cmp | ALUOp::Ucmp) {
+                    self.regs.set(rd, result.value);
+                }
+
                 self.regs.set_flags(result.flags.to_u32());
             }
 
@@ -80,14 +88,22 @@ impl<'a> CPU<'a> {
                 rs1,
                 imm,
             } => {
-                let a = self.regs.get(rs1);
-
                 let alu_op = ALUOp::from_opcode(opcode);
                 let in_flags = Flags::from_u32(self.regs.flags());
 
-                let result: ALUResult = ALU::execute(alu_op, a, imm, in_flags);
+                let result: ALUResult = if matches!(alu_op, ALUOp::Cmp | ALUOp::Ucmp) {
+                    // Para CMPI/UCMPI, usar rd y imm
+                    let a = self.regs.get(rd);
+                    ALU::execute(alu_op, a, imm, in_flags)
+                } else {
+                    let a = self.regs.get(rs1);
+                    ALU::execute(alu_op, a, imm, in_flags)
+                };
 
-                self.regs.set(rd, result.value);
+                if !matches!(alu_op, ALUOp::Cmp | ALUOp::Ucmp) {
+                    self.regs.set(rd, result.value);
+                }
+
                 self.regs.set_flags(result.flags.to_u32());
             }
 
@@ -185,16 +201,23 @@ impl<'a> CPU<'a> {
                     Opcode::CALL => {
                         update_pc = true;
                         let ret_addr = pc.wrapping_add(4);
+
+                        self.regs.set_lr(ret_addr);
+
                         let sp = self.regs.sp().wrapping_sub(4);
                         self.mem.write32(sp, ret_addr);
                         self.regs.set_sp(sp);
+
                         pc.wrapping_add((offset * 4) as u32)
                     }
+
                     Opcode::RET => {
                         update_pc = true;
+
                         let sp = self.regs.sp();
                         let ret_addr = self.mem.read32(sp);
                         self.regs.set_sp(sp.wrapping_add(4));
+
                         ret_addr
                     }
 
