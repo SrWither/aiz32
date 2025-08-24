@@ -11,16 +11,16 @@ fn sign_extend_24(offset: u32) -> i32 {
     }
 }
 
-pub struct CPU {
+pub struct CPU<'a> {
     pub regs: RegisterBank,
     pub mem: MemoryBus,
     pub alu: ALU,
     pub cycle_count: u64,
     pub halted: bool,
-    pub io: IO,
+    pub io: IO<'a>,
 }
 
-impl CPU {
+impl<'a> CPU<'a> {
     pub fn new(ram_size: usize, rom_contents: Vec<u8>, sp_dir: u32, pc_dir: u32) -> Self {
         Self {
             regs: RegisterBank::new(pc_dir, sp_dir),

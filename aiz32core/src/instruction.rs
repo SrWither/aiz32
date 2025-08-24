@@ -163,8 +163,8 @@ pub enum Instruction {
     },
     IO {
         opcode: Opcode,
-        port: u16,
         rd: u8,
+        port: u16,
     },
 }
 
@@ -481,9 +481,10 @@ impl Instruction {
             }
 
             // IO
+            // IO
             Opcode::IN | Opcode::OUT => {
                 let rd = ((raw >> 19) & 0x1F) as u8;
-                let port = (raw & 0xFFFF) as u16;
+                let port = ((raw >> 3) & 0xFFFF) as u16;
                 Instruction::IO { opcode, port, rd }
             }
         }

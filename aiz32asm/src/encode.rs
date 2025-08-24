@@ -30,7 +30,8 @@ pub fn encode_fp(opcode: Opcode, rd: u8, rs1: u8, rs2: u8) -> u32 {
     ((opcode as u32) << 24) | ((rd as u32) << 19) | ((rs1 as u32) << 14) | ((rs2 as u32) << 9)
 }
 
-/// IO-type: opcode(8) | port(16) | rd(5) | unused(3)
-pub fn encode_io(opcode: Opcode, port: u16, rd: u8) -> u32 {
-    ((opcode as u32) << 24) | ((port as u32) << 8) | ((rd as u32) << 3)
+
+/// IO-type: opcode(8) | rd(5) | port(16) | unused(3)
+pub fn encode_io(opcode: Opcode, rd: u8, port: u16) -> u32 {
+    ((opcode as u32) << 24) | ((rd as u32) << 19) | ((port as u32) << 3)
 }

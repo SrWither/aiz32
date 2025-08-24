@@ -221,7 +221,7 @@ pub fn second_pass(
             Opcode::IN | Opcode::OUT => {
                 let rd = parse_reg(&tokens[1]);
                 let port = parse_port(&tokens[2]);
-                encode_io(*opcode, port, rd)
+                encode_io(*opcode, rd, port)
             }
 
             Opcode::FADD

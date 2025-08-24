@@ -1,3 +1,5 @@
+use crate::peripheral::Peripheral;
+
 pub struct RAM {
     pub data: Vec<u8>,
 }
@@ -156,24 +158,38 @@ impl MemoryBus {
     }
 }
 
-pub struct IO {
+pub struct IO<'a> {
     ports: Vec<u32>,
+    peripherals: Vec<&'a mut dyn Peripheral>,
 }
 
-impl IO {
+impl<'a> IO<'a> {
     pub fn new() -> Self {
         Self {
             ports: vec![0; 65536],
+            peripherals: Vec::new(),
         }
     }
 
+    pub fn register_peripheral(&mut self, peripheral: &'a mut dyn Peripheral) {
+        self.peripherals.push(peripheral);
+    }
+
     pub fn read(&self, port: u16) -> u32 {
-        let idx = port as usize;
-        self.ports[idx]
+        for peripheral in &self.peripherals {
+            if peripheral.handles_port(port) {
+                return peripheral.read(port);
+            }
+        }
+        self.ports[port as usize]
     }
 
     pub fn write(&mut self, port: u16, value: u32) {
-        let idx = port as usize;
-        self.ports[idx] = value;
+        self.ports[port as usize] = value;
+        for peripheral in self.peripherals.iter_mut() {
+            if peripheral.handles_port(port) {
+                peripheral.write(port, value);
+            }
+        }
     }
 }
