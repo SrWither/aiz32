@@ -1,0 +1,7 @@
+[package]
+name = "aiz32asm"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aiz32core = { path = "../aiz32core" }

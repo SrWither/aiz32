@@ -1,0 +1,3 @@
+[workspace]
+members = ["aiz32emu", "aiz32asm", "aiz32core"]
+resolver = "3"
