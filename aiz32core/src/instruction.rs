@@ -156,6 +156,7 @@ pub enum Instruction {
         opcode: Opcode,
         rd: u8,
         imm: u32,
+        rs: u8,
     },
     FP {
         opcode: Opcode,
@@ -437,7 +438,6 @@ impl Instruction {
             }
             Opcode::RET | Opcode::HALT => Instruction::J { opcode, offset: 0 },
 
-            // Move & System
             Opcode::MOV
             | Opcode::LI
             | Opcode::LUI
@@ -447,8 +447,15 @@ impl Instruction {
             | Opcode::MOVSP
             | Opcode::SETSP => {
                 let rd = ((raw >> 19) & 0x1F) as u8;
-                let imm = (raw & 0xFFFF) as u32;
-                Instruction::Sys { opcode, rd, imm }
+                let rs_or_imm = ((raw >> 14) & 0x1F) as u8;
+                let imm = raw & 0x3FFFF;
+
+                Instruction::Sys {
+                    opcode,
+                    rd,
+                    rs: rs_or_imm,
+                    imm,
+                }
             }
 
             Opcode::FLD | Opcode::FST => {

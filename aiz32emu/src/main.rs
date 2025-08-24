@@ -57,9 +57,9 @@ fn main() {
         );
         println!("==================================================\n");
 
-        // std::thread::sleep(std::time::Duration::from_millis(1000));
+        // std::thread::sleep(std::time::Duration::from_millis(100));
         // press enter to continue
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input).unwrap();
+        // let mut input = String::new();
+        // std::io::stdin().read_line(&mut input).unwrap();
     }
 }

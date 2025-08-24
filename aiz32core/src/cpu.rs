@@ -284,9 +284,14 @@ impl<'a> CPU<'a> {
             }
 
             // Move & System Instructions
-            Instruction::Sys { opcode, rd, imm } => match opcode {
+            Instruction::Sys {
+                opcode,
+                rd,
+                imm,
+                rs,
+            } => match opcode {
                 Opcode::MOV => {
-                    let value = self.regs.get(imm as u8);
+                    let value = self.regs.get(rs);
                     self.regs.set(rd, value);
                 }
                 Opcode::LUI => {
