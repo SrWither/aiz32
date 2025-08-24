@@ -266,11 +266,12 @@ impl<'a> CPU<'a> {
                     let value = self.regs.get(imm as u8);
                     self.regs.set(rd, value);
                 }
-                Opcode::LI => {
-                    self.regs.set(rd, imm & 0xFFFF);
-                }
                 Opcode::LUI => {
-                    self.regs.set(rd, imm << 16);
+                    self.regs.set(rd, (imm & 0xFFFF) << 16);
+                }
+                Opcode::LI => {
+                    let upper = self.regs.get(rd) & 0xFFFF0000;
+                    self.regs.set(rd, upper | (imm & 0xFFFF));
                 }
                 Opcode::MOVPC => {
                     self.regs.set(rd, self.regs.pc());

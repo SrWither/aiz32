@@ -447,7 +447,7 @@ impl Instruction {
             | Opcode::MOVSP
             | Opcode::SETSP => {
                 let rd = ((raw >> 19) & 0x1F) as u8;
-                let imm = (raw & 0x1FF) as u32;
+                let imm = (raw & 0xFFFF) as u32;
                 Instruction::Sys { opcode, rd, imm }
             }
 
