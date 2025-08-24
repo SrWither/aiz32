@@ -243,6 +243,19 @@ impl<'a> CPU<'a> {
                     Opcode::STH => self.mem.write16(addr, self.regs.get(rd) as u16),
                     Opcode::STW | Opcode::STLR => self.mem.write32(addr, self.regs.get(rd)),
 
+                    Opcode::PUSH => {
+                        let sp = self.regs.sp().wrapping_sub(4);
+                        self.mem.write32(sp, self.regs.get(rd));
+                        self.regs.set_sp(sp);
+                    }
+
+                    Opcode::POP => {
+                        let sp = self.regs.sp();
+                        let value = self.mem.read32(sp);
+                        self.regs.set(rd, value);
+                        self.regs.set_sp(sp.wrapping_add(4));
+                    }
+
                     _ => unimplemented!(),
                 }
             }

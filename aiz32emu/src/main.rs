@@ -17,7 +17,18 @@ fn main() {
     cpu.io.register_peripheral(&mut console);
 
     loop {
+        println!(
+            "R0: {:08X} R1: {:08X} R2: {:08X} R3: {:08X} R4: {:08X} SP: {:08X} PC: {:08X}\r",
+            cpu.regs.get(0),
+            cpu.regs.get(1),
+            cpu.regs.get(2),
+            cpu.regs.get(3),
+            cpu.regs.get(4),
+            cpu.regs.sp(),
+            cpu.regs.pc()
+        );
+
         cpu.step();
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(1000));
     }
 }

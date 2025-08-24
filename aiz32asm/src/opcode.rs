@@ -84,6 +84,8 @@ pub fn opcode_table() -> HashMap<String, Opcode> {
     map.insert("STW".into(), STW);
     map.insert("LDLR".into(), LDLR);
     map.insert("STLR".into(), STLR);
+    map.insert("PUSH".into(), PUSH);
+    map.insert("POP".into(), POP);
 
     // Jumps & Branch
     map.insert("JMP".into(), JMP);

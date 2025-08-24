@@ -79,6 +79,8 @@ pub enum Opcode {
     STW = 0x47,
     LDLR = 0x48,
     STLR = 0x49,
+    PUSH = 0x4A,
+    POP = 0x4B,
 
     // Jumps & Branch
     JMP = 0x60,
@@ -94,7 +96,7 @@ pub enum Opcode {
     JO = 0x6A,
     CALL = 0x6B,
     RET = 0x6C,
-    HALT = 0x6D, // Note: HALT was missing in the ISA table; added here
+    HALT = 0x6D,
 
     // Move & System
     MOV = 0x80,
@@ -252,6 +254,8 @@ impl Instruction {
             0x47 => Opcode::STW,
             0x48 => Opcode::LDLR,
             0x49 => Opcode::STLR,
+            0x4A => Opcode::PUSH,
+            0x4B => Opcode::POP,
 
             // Jump & Branch opcodes
             0x60 => Opcode::JMP,
@@ -398,7 +402,9 @@ impl Instruction {
             | Opcode::STH
             | Opcode::STW
             | Opcode::LDLR
-            | Opcode::STLR => {
+            | Opcode::STLR
+            | Opcode::PUSH
+            | Opcode::POP => {
                 let rd = ((raw >> 19) & 0x1F) as u8;
                 let rs1 = ((raw >> 14) & 0x1F) as u8;
                 let imm = (raw & 0x1FF) as u32;

@@ -174,6 +174,11 @@ pub fn second_pass(
                 encode_mem(*opcode, rd, rs1, 0)
             }
 
+            Opcode::PUSH | Opcode::POP => {
+                let rd = parse_reg(&tokens[1]);
+                encode_mem(*opcode, rd, 0, 0)
+            }
+
             Opcode::JMP
             | Opcode::JZ
             | Opcode::JNZ
