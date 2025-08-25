@@ -17,11 +17,11 @@ pub struct GPU {
     pub angle: u32,
     pub w: u32,
     pub h: u32,
-    pub rom: Vec<u8>,
+    pub rom: Vec<u32>,
 }
 
 impl GPU {
-    pub fn new(width: usize, height: usize, rom: Vec<u8>) -> Self {
+    pub fn new(width: usize, height: usize, rom: Vec<u32>) -> Self {
         Self {
             width,
             height,
@@ -70,7 +70,6 @@ impl GPU {
     }
 
     fn fill_linear_gradient(&mut self, color_start: u32, color_end: u32, _angle: u32) {
-        // Vertical gradient optimizado
         for y in 0..self.height {
             let t = y as f32 / (self.height - 1) as f32;
             let color = lerp_color(color_start, color_end, t);
@@ -84,7 +83,6 @@ impl GPU {
     }
 
     fn fill_multi_linear_gradient(&mut self, color_start: u32, color_mid: u32, color_end: u32, _angle: u32) {
-        // Vertical multi-gradient optimizado
         for y in 0..self.height {
             let t = y as f32 / (self.height - 1) as f32;
             let color = if t < 0.5 {
@@ -102,7 +100,6 @@ impl GPU {
     }
 
     fn fill_radial_gradient(&mut self, cx: usize, cy: usize, color_center: u32, color_outer: u32) {
-        // Gradiente radial
         let mut max_r = 0.0;
         for &(px, py) in &[(0, 0), (self.width - 1, 0), (0, self.height - 1), (self.width - 1, self.height - 1)] {
             let dx = px as f32 - cx as f32;
@@ -124,19 +121,21 @@ impl GPU {
     }
 
     fn draw_tile(&mut self, tile_index: usize, x0: usize, y0: usize) {
-        let tile_size = 8;
-        let start = tile_index * tile_size * tile_size;
-        for ty in 0..tile_size {
-            for tx in 0..tile_size {
-                let rom_idx = start + ty * tile_size + tx;
+        let tile_w = if self.w == 0 { 8 } else { self.w as usize };
+        let tile_h = if self.h == 0 { 8 } else { self.h as usize };
+        let start = tile_index * tile_w * tile_h;
+    
+        for ty in 0..tile_h {
+            for tx in 0..tile_w {
+                let rom_idx = start + ty * tile_w + tx;
                 if rom_idx < self.rom.len() {
-                    let color = self.rom[rom_idx] as u32;
+                    let color = self.rom[rom_idx];
                     self.draw_pixel(x0 + tx, y0 + ty, color);
                 }
             }
         }
     }
-
+    
     pub fn execute_command(&mut self) {
         match self.command {
             1 => self.draw_pixel(self.x as usize, self.y as usize, self.color),

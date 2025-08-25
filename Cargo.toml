@@ -1,7 +1,8 @@
 [workspace]
-members = ["aiz32emu", "aiz32asm", "aiz32core"]
+members = ["aiz32emu", "aiz32asm", "aiz32core", "aiz32tiles"]
 resolver = "3"
 
 [workspace.dependencies]
 sdl2 = "0.38"
 bytemuck = "1.14"
+image = "0.25"
