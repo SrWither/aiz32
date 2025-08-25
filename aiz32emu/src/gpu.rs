@@ -48,10 +48,11 @@ impl GPU {
 
     pub fn present(&mut self) {
         if self.frame_dirty {
-            std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
+            self.front_buffer.copy_from_slice(&self.back_buffer);
             self.frame_dirty = false;
         }
     }
+    
 
     fn draw_pixel(&mut self, x: usize, y: usize, color: u32) {
         if x < self.width && y < self.height {
