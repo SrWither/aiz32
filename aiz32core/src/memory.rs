@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::peripheral::Peripheral;
 
 pub struct RAM {
@@ -158,12 +160,12 @@ impl MemoryBus {
     }
 }
 
-pub struct IO<'a> {
+pub struct IO {
     ports: Vec<u32>,
-    peripherals: Vec<&'a mut dyn Peripheral>,
+    peripherals: Vec<Rc<RefCell<dyn Peripheral>>>,
 }
 
-impl<'a> IO<'a> {
+impl IO {
     pub fn new() -> Self {
         Self {
             ports: vec![0; 65536],
@@ -171,14 +173,15 @@ impl<'a> IO<'a> {
         }
     }
 
-    pub fn register_peripheral(&mut self, peripheral: &'a mut dyn Peripheral) {
+    pub fn register_peripheral(&mut self, peripheral: Rc<RefCell<dyn Peripheral>>) {
         self.peripherals.push(peripheral);
     }
 
     pub fn read(&self, port: u16) -> u32 {
         for peripheral in &self.peripherals {
-            if peripheral.handles_port(port) {
-                return peripheral.read(port);
+            let p = peripheral.borrow();
+            if p.handles_port(port) {
+                return p.read(port);
             }
         }
         self.ports[port as usize]
@@ -186,9 +189,10 @@ impl<'a> IO<'a> {
 
     pub fn write(&mut self, port: u16, value: u32) {
         self.ports[port as usize] = value;
-        for peripheral in self.peripherals.iter_mut() {
-            if peripheral.handles_port(port) {
-                peripheral.write(port, value);
+        for peripheral in &self.peripherals {
+            let mut p = peripheral.borrow_mut();
+            if p.handles_port(port) {
+                p.write(port, value);
             }
         }
     }

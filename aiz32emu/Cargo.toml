@@ -5,3 +5,5 @@ edition = "2024"
 
 [dependencies]
 aiz32core = { path = "../aiz32core" }
+sdl2 = {workspace = true}
+bytemuck = {workspace = true}
