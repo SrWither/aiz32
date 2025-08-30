@@ -19,8 +19,10 @@ fn main() {
     let img = image::open(img_path).expect("No se pudo abrir la imagen");
     let (img_width, img_height) = img.dimensions();
 
-    assert!(img_width % tile_size == 0 && img_height % tile_size == 0,
-        "La imagen debe ser múltiplo del tamaño del tile");
+    assert!(
+        img_width % tile_size == 0 && img_height % tile_size == 0,
+        "La imagen debe ser múltiplo del tamaño del tile"
+    );
 
     let tiles_x = img_width / tile_size;
     let tiles_y = img_height / tile_size;
@@ -34,16 +36,16 @@ fn main() {
                     let px_x = tx * tile_size + px;
                     let px_y = ty * tile_size + py;
                     let pixel = img.get_pixel(px_x, px_y);
-                    let color = ((pixel[0] as u32) << 16)
-                              | ((pixel[1] as u32) << 8)
-                              | (pixel[2] as u32);
+                    let color = ((pixel[3] as u32) << 24) // A
+                              | ((pixel[0] as u32) << 16) // R
+                              | ((pixel[1] as u32) << 8)  // G
+                              |  (pixel[2] as u32);       // B
                     rom.push(color);
                 }
             }
         }
     }
 
-    // Guardar ROM
     let mut file = File::create(rom_path).expect("No se pudo crear el archivo");
     for color in rom {
         file.write_all(&color.to_be_bytes()).expect("Error escribiendo ROM");

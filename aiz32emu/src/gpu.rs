@@ -52,7 +52,6 @@ impl GPU {
             self.frame_dirty = false;
         }
     }
-    
 
     fn draw_pixel(&mut self, x: usize, y: usize, color: u32) {
         if x < self.width && y < self.height {
@@ -70,6 +69,11 @@ impl GPU {
         self.frame_dirty = true;
     }
 
+    fn clear_screen(&mut self, color: u32) {
+        self.back_buffer.fill(color);
+        self.frame_dirty = true;
+    }
+
     fn fill_linear_gradient(&mut self, color_start: u32, color_end: u32, _angle: u32) {
         for y in 0..self.height {
             let t = y as f32 / (self.height - 1) as f32;
@@ -83,7 +87,13 @@ impl GPU {
         self.frame_dirty = true;
     }
 
-    fn fill_multi_linear_gradient(&mut self, color_start: u32, color_mid: u32, color_end: u32, _angle: u32) {
+    fn fill_multi_linear_gradient(
+        &mut self,
+        color_start: u32,
+        color_mid: u32,
+        color_end: u32,
+        _angle: u32,
+    ) {
         for y in 0..self.height {
             let t = y as f32 / (self.height - 1) as f32;
             let color = if t < 0.5 {
@@ -102,19 +112,30 @@ impl GPU {
 
     fn fill_radial_gradient(&mut self, cx: usize, cy: usize, color_center: u32, color_outer: u32) {
         let mut max_r = 0.0;
-        for &(px, py) in &[(0, 0), (self.width - 1, 0), (0, self.height - 1), (self.width - 1, self.height - 1)] {
+        for &(px, py) in &[
+            (0, 0),
+            (self.width - 1, 0),
+            (0, self.height - 1),
+            (self.width - 1, self.height - 1),
+        ] {
             let dx = px as f32 - cx as f32;
             let dy = py as f32 - cy as f32;
-            let r = (dx*dx + dy*dy).sqrt();
-            if r > max_r { max_r = r; }
+            let r = (dx * dx + dy * dy).sqrt();
+            if r > max_r {
+                max_r = r;
+            }
         }
 
         for y in 0..self.height {
             for x in 0..self.width {
                 let dx = x as f32 - cx as f32;
                 let dy = y as f32 - cy as f32;
-                let r = (dx*dx + dy*dy).sqrt();
-                let t = if max_r != 0.0 { (r / max_r).clamp(0.0, 1.0) } else { 0.0 };
+                let r = (dx * dx + dy * dy).sqrt();
+                let t = if max_r != 0.0 {
+                    (r / max_r).clamp(0.0, 1.0)
+                } else {
+                    0.0
+                };
                 self.back_buffer[y * self.width + x] = lerp_color(color_center, color_outer, t);
             }
         }
@@ -125,7 +146,7 @@ impl GPU {
         let tile_w = if self.w == 0 { 8 } else { self.w as usize };
         let tile_h = if self.h == 0 { 8 } else { self.h as usize };
         let start = tile_index * tile_w * tile_h;
-    
+
         for ty in 0..tile_h {
             for tx in 0..tile_w {
                 let rom_idx = start + ty * tile_w + tx;
@@ -136,19 +157,38 @@ impl GPU {
             }
         }
     }
-    
+
     pub fn execute_command(&mut self) {
         match self.command {
             1 => self.draw_pixel(self.x as usize, self.y as usize, self.color),
             2 => {
-                let x1 = if self.w == 0 { self.width - 1 } else { (self.x + self.w - 1) as usize };
-                let y1 = if self.h == 0 { self.height - 1 } else { (self.y + self.h - 1) as usize };
+                let x1 = if self.w == 0 {
+                    self.width - 1
+                } else {
+                    (self.x + self.w - 1) as usize
+                };
+                let y1 = if self.h == 0 {
+                    self.height - 1
+                } else {
+                    (self.y + self.h - 1) as usize
+                };
                 self.fill_rect(self.x as usize, self.y as usize, x1, y1, self.color);
             }
             3 => self.fill_linear_gradient(self.color, self.color_end, self.angle),
             4 => self.draw_tile(self.tile_index as usize, self.x as usize, self.y as usize),
-            5 => self.fill_radial_gradient(self.x as usize, self.y as usize, self.color, self.color_end),
-            6 => self.fill_multi_linear_gradient(self.color, self.color_mid, self.color_end, self.angle),
+            5 => self.fill_radial_gradient(
+                self.x as usize,
+                self.y as usize,
+                self.color,
+                self.color_end,
+            ),
+            6 => self.fill_multi_linear_gradient(
+                self.color,
+                self.color_mid,
+                self.color_end,
+                self.angle,
+            ),
+            7 => self.clear_screen(self.color),
             _ => {}
         }
     }

@@ -114,7 +114,7 @@ fn main() {
 
     // ciclo principal
     while !cpu.halted {
-        for _ in 0..50_000 {
+        for _ in 0..1_000 {
             if cpu.halted {
                 break;
             }
@@ -178,14 +178,33 @@ fn main() {
 
         if debug {
             let flags = Flags::from_u32(cpu.regs.flags());
+
+            println!("================ CPU DUMP ================");
             println!(
-                "PC: {:08X}, SP: {:08X}, Flags: Z={} C={} O={}",
+                "PC: 0x{:08X}   SP: 0x{:08X}   FLAGS: 0x{:02X} [Z={} C={} O={}]",
                 cpu.regs.pc(),
                 cpu.regs.sp(),
+                cpu.regs.flags() & 0xFF,
                 flags.zero as u8,
                 flags.carry as u8,
                 flags.overflow as u8
             );
+
+            println!("---------------- REGISTERS ----------------");
+            for i in 0..16 {
+                print!("R{:02}: 0x{:08X}  ", i, cpu.regs.get(i));
+                if i % 4 == 3 {
+                    println!();
+                }
+            }
+            println!("==========================================");
+
+            // Espera a Enter
+            use std::io::{self, Write};
+            print!("Press Enter to continue...");
+            io::stdout().flush().unwrap();
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).unwrap();
         }
     }
 }
@@ -563,6 +582,10 @@ fn map_keycode(key: Keycode, shift: bool) -> u8 {
         Keycode::Space => 158,
         Keycode::Backspace => 200,
         Keycode::Return => 201,
+        Keycode::Left => 202,
+        Keycode::Right => 203,
+        Keycode::Up => 204,
+        Keycode::Down => 205,
 
         _ => 0,
     }
